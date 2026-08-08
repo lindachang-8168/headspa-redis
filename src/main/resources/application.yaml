@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: headspa-redis
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/headspa?useSSL=false&serverTimezone=Asia/Taipei&characterEncoding=utf8
+    username: root
+    password: ${MYSQL_PASSWORD:}  # 請改成你自己的密碼
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # password: 你的Redis密碼（若有設定）

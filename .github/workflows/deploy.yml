@@ -1,0 +1,33 @@
+name: Deploy HeadSPA Booking to AWS
+
+# 每次 push 到 main 分支就自動觸發部署
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH 進 AWS 主機並重新部署
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            # 專案在主機上的路徑，依實際狀況修改
+            cd ~/HeadSpa2/headspa-redis
+
+            # 拉最新程式碼
+            git pull origin main
+
+            # .env（含 MYSQL_PASSWORD）平時就留在主機上，不會進 Git，
+            # 所以這裡不需要也不應該從 GitHub 帶密碼過來
+
+            # 重新建置並啟動（含前端就把 --profile frontend 加回來）
+            docker compose up -d --build
+
+            # 清掉沒用到的舊 image，避免主機空間被塞滿
+            docker image prune -f
