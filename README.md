@@ -113,4 +113,4 @@ docker compose --profile frontend up -d --build
 
 ## ☁️ 部署
 
-`headspa-redis` 與 `headspa-frontend` 是兩個獨立 repo，但部署到主機時會被 clone 到同一層目錄，讓 `docker-compose.yml` 裡的 `../headspa-frontend` 相對路徑能正確找到前端。push 到 `master`（`headspa-redis`）或 `main`（`headspa-frontend`）分支時，GitHub Actions 會自動 SSH 進 AWS 主機、拉最新程式碼、重新建置並啟動全部服務。
+`headspa-redis` 與 `headspa-frontend` 是兩個獨立 repo，但部署到主機時會被 clone 到同一層目錄，讓 `docker-compose.yml` 裡的 `../headspa-frontend` 相對路徑能正確找到前端。push 到 `master` 分支時（兩個 repo 皆同），GitHub Actions 會自動 SSH 進 AWS 主機、拉最新程式碼、重新建置並啟動全部服務。
