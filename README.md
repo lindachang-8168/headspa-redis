@@ -23,21 +23,7 @@
 
 ## 🏗 系統架構
 
-```mermaid
-flowchart LR
-    User([使用者瀏覽器]) -->|HTTP/HTTPS| Frontend
-
-    subgraph Docker Host
-        Frontend["前端 Container<br/>Nginx : 80"]
-        Backend["後端 Container<br/>Spring Boot : 8080"]
-        Redis[("Redis Container<br/>: 6379")]
-        MySQL[("MySQL Container<br/>: 3306")]
-
-        Frontend -->|REST API / JSON| Backend
-        Backend -->|讀寫快取| Redis
-        Backend -->|JPA| MySQL
-    end
-```
+![系統架構圖](docs/architecture.png)
 
 - **前端**：純 HTML / CSS / JavaScript（無框架），用 `fetch` 呼叫後端 REST API，由 Nginx 提供靜態頁面
 - **後端**：Spring Boot 3 + Spring Data JPA + Spring Data Redis
