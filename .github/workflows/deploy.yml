@@ -1,6 +1,9 @@
 name: Deploy HeadSPA Booking to AWS
 
 # 每次 push 到 main 分支就自動觸發部署
+# 這個 workflow 會把 headspa-redis / headspa-frontend 兩個 repo
+# 都 clone/pull 下來，維持「同一層」的相對位置，
+# 這樣 docker-compose.yml 裡的 ../headspa-frontend 才抓得到。
 on:
   push:
     branches:
@@ -17,17 +20,29 @@ jobs:
           username: ${{ secrets.AWS_USER }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            # 專案在主機上的路徑，依實際狀況修改
-            cd ~/HeadSpa2/headspa-redis
+            cd ~
 
-            # 拉最新程式碼
+            if [ ! -d headspa-redis ]; then
+              git clone https://github.com/lindachang-8168/headspa-redis.git headspa-redis
+            fi
+            cd headspa-redis
             git pull origin main
+            cd ~
 
-            # .env（含 MYSQL_PASSWORD）平時就留在主機上，不會進 Git，
-            # 所以這裡不需要也不應該從 GitHub 帶密碼過來
+            if [ ! -d headspa-frontend ]; then
+              git clone https://github.com/lindachang-8168/headspa-frontend.git headspa-frontend
+            fi
+            cd headspa-frontend
+            git pull origin main
+            cd ~
 
-            # 重新建置並啟動（含前端就把 --profile frontend 加回來）
-            docker compose up -d --build
+            # docker-compose.yml 放在 headspa-redis 裡面，指令要在那一層下
+            cd headspa-redis
+
+            # .env（含 MYSQL_PASSWORD）平時就留在主機上，不會進 Git
+
+            # 同時重建後端 + 前端
+            docker compose --profile frontend up -d --build
 
             # 清掉沒用到的舊 image，避免主機空間被塞滿
             docker image prune -f
