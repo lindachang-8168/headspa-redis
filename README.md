@@ -97,6 +97,20 @@ docker compose --profile frontend up -d --build
 
 啟動後：前端 `http://localhost`，後端 API `http://localhost:8080`。
 
+## 🐳 Docker Hub
+
+後端與前端的 image 都已建置並發布到 Docker Hub，可直接 pull 使用，不需自行 build：
+
+| Image | Docker Hub |
+|---|---|
+| 後端（Spring Boot） | [`lindachang8168/headspa-backend`](https://hub.docker.com/r/lindachang8168/headspa-backend) |
+| 前端（Nginx） | [`lindachang8168/headspa-frontend`](https://hub.docker.com/r/lindachang8168/headspa-frontend) |
+
+```bash
+docker pull lindachang8168/headspa-backend:latest
+docker pull lindachang8168/headspa-frontend:latest
+```
+
 ## ☁️ 部署
 
 `headspa-redis` 與 `headspa-frontend` 是兩個獨立 repo，但部署到主機時會被 clone 到同一層目錄，讓 `docker-compose.yml` 裡的 `../headspa-frontend` 相對路徑能正確找到前端。push 到 `master` 分支時（兩個 repo 皆同），GitHub Actions 會自動 SSH 進 AWS 主機、拉最新程式碼、重新建置並啟動全部服務。
