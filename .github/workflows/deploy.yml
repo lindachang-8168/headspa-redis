@@ -1,12 +1,17 @@
 name: Deploy HeadSPA Booking to AWS
 
-# 每次 push 到 master 分支就自動觸發部署
+# AWS 主機目前已停用，改為「手動觸發」：到 GitHub → Actions → 選這個 workflow → Run workflow
+# 需要重新啟用自動部署時，把下面改回：
+#   on:
+#     push:
+#       branches:
+#         - master
+# 並在 repo Settings → Secrets 設好 AWS_HOST / AWS_USER / AWS_SSH_KEY。
+#
 # 前後端已合併成同一個 repo：前端 HTML 放在 src/main/resources/static，
 # 由 Spring Boot 直接提供，所以只需要 pull 這一個 repo、重建 app 即可。
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   deploy:

@@ -2,15 +2,18 @@
 
 一個完整的頭部經絡按摩預約管理系統，涵蓋會員預約、芳療師班表管理、後端 REST API、快取與部署到 AWS 的完整流程。前後端已合併在同一個 repo：前端頁面放在 `src/main/resources/static`，由 Spring Boot 直接提供（Spring Boot + MySQL + Redis）。
 
-## 🌐 Live Demo
+## 🌐 Demo
 
-| 角色 | 網址 |
+> 原本部署在 AWS EC2 的線上版本已停用，請依下方「🚀 本機執行」用 Docker 一鍵啟動後瀏覽。
+
+| 頁面 | 網址（本機） |
 |---|---|
-| 會員登入 | http://98.82.248.135 |
-| 芳療師登入 | http://98.82.248.135/therapist.html |
-| 後端 API | http://98.82.248.135/api/therapists |
+| 會員登入 | http://localhost |
+| 芳療師登入 | http://localhost/therapist.html |
+| Vue 示範頁（假資料） | http://localhost/vue-demo.html |
+| 後端 API | http://localhost/api/therapists |
 
-**示範帳號（芳療師，用手機號碼登入）：**
+**芳療師帳號範例（用手機號碼登入；新資料庫是空的，第一次登入時找不到會跳出表單，現場建立即可）：**
 
 | 手機號碼 | 姓名 | 專長 |
 |---|---|---|
@@ -29,7 +32,7 @@
 - **後端**：Spring Boot 3 + Spring Data JPA + Spring Data Redis
 - **資料庫**：MySQL 8.4（會員、芳療師、預約資料）
 - **快取**：Redis 7（芳療師的預約查詢結果快取，5 分鐘 TTL，並支援 Redis 斷線時自動降級直接查資料庫）
-- **部署**：Docker Compose 一鍵啟動三個服務（mysql / redis / app），透過 GitHub Actions 自動 SSH 部署到 AWS EC2
+- **部署**：Docker Compose 一鍵啟動三個服務（mysql / redis / app），透過 GitHub Actions SSH 部署到 AWS EC2（AWS 目前已停用，workflow 改為手動觸發）
 
 ## ✨ 功能
 
@@ -65,7 +68,7 @@ headspa-redis/
 │   └── static/       # 前端頁面 index.html（會員）、therapist.html（芳療師）
 ├── docker-compose.yml   # mysql / redis / app 三個服務
 ├── Dockerfile            # 多階段建置（Maven build → JRE 執行環境）
-└── .github/workflows/deploy.yml   # push 到 master 自動部署到 AWS
+└── .github/workflows/deploy.yml   # GitHub Actions 部署到 AWS（目前為手動觸發）
 ```
 
 ## 🔌 API 端點
@@ -116,4 +119,6 @@ docker pull lindachang8168/headspa-backend:latest
 
 ## ☁️ 部署
 
-push 到 `master` 分支時，GitHub Actions 會自動 SSH 進 AWS 主機、拉最新程式碼、重新建置並啟動全部服務（前端已包含在 app 裡，不再需要另外 clone `headspa-frontend`）。
+GitHub Actions workflow（`.github/workflows/deploy.yml`）會 SSH 進 AWS EC2、拉最新程式碼、`docker compose up -d --build` 重新建置並啟動全部服務。
+
+> 目前 AWS 主機已停用，workflow 改為**手動觸發**（Actions → Run workflow）。重新啟用時，把觸發條件改回 `push: master`，並在 repo Settings → Secrets 設定 `AWS_HOST`、`AWS_USER`、`AWS_SSH_KEY`。
