@@ -2,11 +2,14 @@ package com.headspa.redis.controller;
 
 import com.headspa.redis.model.Appointment;
 import com.headspa.redis.service.AppointmentService;
+import com.headspa.redis.service.TimeSlotConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -52,5 +55,11 @@ public class AppointmentController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         appointmentService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // 時段衝突 → 409 Conflict，回傳 {"message": "..."} 讓前端直接顯示
+    @ExceptionHandler(TimeSlotConflictException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(TimeSlotConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
     }
 }

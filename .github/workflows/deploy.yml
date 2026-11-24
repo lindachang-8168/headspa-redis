@@ -1,9 +1,8 @@
 name: Deploy HeadSPA Booking to AWS
 
 # 每次 push 到 master 分支就自動觸發部署
-# 這個 workflow 會把 headspa-redis / headspa-frontend 兩個 repo
-# 都 clone/pull 下來，維持「同一層」的相對位置，
-# 這樣 docker-compose.yml 裡的 ../headspa-frontend 才抓得到。
+# 前後端已合併成同一個 repo：前端 HTML 放在 src/main/resources/static，
+# 由 Spring Boot 直接提供，所以只需要 pull 這一個 repo、重建 app 即可。
 on:
   push:
     branches:
@@ -27,23 +26,14 @@ jobs:
             fi
             cd headspa-redis
             git pull origin master
-            cd ~
-
-            if [ ! -d headspa-frontend ]; then
-              git clone https://github.com/lindachang-8168/headspa-frontend.git headspa-frontend
-            fi
-            cd headspa-frontend
-            git pull origin master
-            cd ~
-
-            # docker-compose.yml 放在 headspa-redis 裡面，指令要在那一層下
-            cd headspa-redis
 
             # .env（含 MYSQL_PASSWORD）平時就留在主機上，不會進 Git
 
-            # 同時重建後端 + 前端
-            docker compose --profile frontend up -d --build
+            # 舊版的獨立前端容器（Nginx）佔用 80 port，先停掉移除
+            docker rm -f headspa-frontend 2>/dev/null || true
+
+            # 重建並啟動 mysql / redis / app（app 內含前端頁面）
+            docker compose up -d --build --remove-orphans
 
             # 清掉沒用到的舊 image，避免主機空間被塞滿
             docker image prune -f
-

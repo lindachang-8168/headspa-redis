@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeadSpa Booking System - Vue 示範版</title>
+<script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
+<style>
+  :root{
+    --green-dark:#2f6b4f; --green:#3f8f66; --green-light:#eaf5ee; --green-border:#c9e3d3;
+    --text:#2c2c2c; --muted:#6b7280; --red:#c0392b; --blue:#1d63c9; --white:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:var(--green-light);color:var(--text);}
+  [v-cloak]{display:none;}
+
+  header{background:var(--white);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--green-border);gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+  .brand .logo{font-size:26px;}
+  .brand h1{font-size:20px;margin:0;color:var(--green-dark);}
+  .brand p{font-size:12px;margin:0;color:var(--muted);}
+  .user-box{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--green-dark);}
+  .hbtn{background:#fff;border:1px solid var(--green-border);color:var(--green-dark);padding:7px 14px;
+    border-radius:8px;cursor:pointer;font-size:13px;}
+  .hbtn:hover{background:var(--green-light);}
+
+  /* 下拉選單 */
+  .dropdown{position:relative;}
+  .dropdown-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--green-border);
+    border-radius:10px;box-shadow:0 8px 24px rgba(47,107,79,.15);min-width:200px;padding:6px;z-index:10;}
+  .dropdown-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 12px;
+    border-radius:6px;font-size:14px;color:var(--text);cursor:pointer;}
+  .dropdown-menu button:hover,.dropdown-menu button.active{background:var(--green-light);color:var(--green-dark);}
+
+  .container{max-width:960px;margin:28px auto;padding:0 16px;}
+  .demo-tag{display:inline-block;font-size:12px;background:#fff7e0;color:#9a6b00;border:1px solid #f1dc9c;
+    padding:4px 10px;border-radius:999px;margin-bottom:16px;}
+
+  /* 卡片列表 */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+  .tile{background:#fff;border:1px solid var(--green-border);border-radius:14px;padding:22px;cursor:pointer;
+    transition:transform .15s, box-shadow .15s;}
+  .tile:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(47,107,79,.12);}
+  .tile .icon{font-size:30px;}
+  .tile h3{margin:10px 0 6px;color:var(--green-dark);font-size:17px;}
+  .tile p{margin:0;font-size:13px;color:var(--muted);line-height:1.6;}
+  .tile .role{display:inline-block;margin-top:12px;font-size:12px;padding:3px 10px;border-radius:999px;
+    background:var(--green-light);color:var(--green-dark);}
+
+  /* 內頁卡片 */
+  .card{background:#fff;border:1px solid var(--green-border);border-radius:14px;padding:26px;}
+  .card h2{margin-top:0;font-size:18px;color:var(--green-dark);}
+  .back{background:none;border:none;color:var(--green-dark);cursor:pointer;font-size:14px;padding:0;margin-bottom:14px;}
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
+  input,select{width:100%;padding:10px 12px;border:1px solid var(--green-border);border-radius:8px;font-size:14px;background:#fff;}
+  .btn{margin-top:18px;background:var(--green);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;}
+  .btn:hover{background:var(--green-dark);}
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:8px;background:#e8f7ee;color:var(--green-dark);}
+  .msg.error{background:#fdecea;color:var(--red);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;min-width:420px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--green-border);font-size:13.5px;}
+  th{color:var(--muted);font-weight:600;}
+  .status{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+  .status.PENDING{background:#eaf5ee;color:var(--green-dark);}
+  .status.CONFIRMED,.status.COMPLETED{background:#e6f0fb;color:var(--blue);}
+  .status.CANCELLED{background:#fdecea;color:var(--red);}
+  .link-btn{background:none;border:none;color:var(--red);cursor:pointer;text-decoration:underline;font-size:13px;padding:0;}
+  .privacy{font-size:12px;color:var(--muted);margin-top:14px;}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px;}
+  .day{border:1px solid var(--green-border);border-radius:10px;padding:10px 6px;text-align:center;font-size:13px;}
+  .day.on{background:var(--green-light);border-color:var(--green);}
+  .day b{display:block;color:var(--green-dark);margin-bottom:4px;}
+  .slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .slot{padding:7px 14px;border-radius:999px;border:1px solid var(--green-border);background:#fff;cursor:pointer;font-size:13px;}
+  .slot.taken{background:#f3f4f6;color:#aaa;cursor:not-allowed;text-decoration:line-through;}
+  .slot.picked{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+
+  .logout-box{text-align:center;padding:60px 20px;}
+  .logout-box .icon{font-size:48px;}
+
+  @media (max-width:600px){
+    header{padding:14px 16px;}
+    .week{grid-template-columns:repeat(4,1fr);}
+  }
+</style>
+</head>
+<body>
+<div id="app" v-cloak>
+
+  <header>
+    <div class="brand" @click="goHome">
+      <span class="logo">🌿</span>
+      <div>
+        <h1>HeadSpa Booking System</h1>
+        <p>頭部經絡按摩預約管理系統（Vue 示範版）</p>
+      </div>
+    </div>
+
+    <div class="user-box" v-if="loggedIn">
+      <span>👋 示範使用者</span>
+      <div class="dropdown" ref="dropdownEl">
+        <button class="hbtn" @click.stop="menuOpen = !menuOpen">📂 功能選單 ▾</button>
+        <div class="dropdown-menu" v-if="menuOpen">
+          <button :class="{active: current === null}" @click="open(null)">🏠 全部功能</button>
+          <button v-for="c in cards" :key="c.key" :class="{active: current === c.key}" @click="open(c.key)">
+            {{ c.icon }} {{ c.title }}
+          </button>
+        </div>
+      </div>
+      <button class="hbtn" @click="logout">登出</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- 已登出 -->
+    <div class="card logout-box" v-if="!loggedIn">
+      <div class="icon">👋</div>
+      <h2>您已登出</h2>
+      <p style="color:var(--muted);font-size:14px;">這是示範版，不需要帳號密碼。</p>
+      <button class="btn" @click="loggedIn = true">重新進入示範</button>
+    </div>
+
+    <template v-else>
+      <span class="demo-tag">⚠️ 示範模式：資料皆為假資料，未連接後端 API</span>
+
+      <!-- 卡片首頁 -->
+      <div class="grid" v-if="current === null">
+        <div class="tile" v-for="c in cards" :key="c.key" @click="open(c.key)">
+          <div class="icon">{{ c.icon }}</div>
+          <h3>{{ c.title }}</h3>
+          <p>{{ c.desc }}</p>
+          <span class="role">{{ c.role }}</span>
+        </div>
+      </div>
+
+      <!-- 內頁 -->
+      <div class="card" v-else>
+        <button class="back" @click="goHome">‹ 回到功能卡片</button>
+
+        <!-- 1. 預約 -->
+        <template v-if="current === 'booking'">
+          <h2>📅 線上預約</h2>
+          <label>選擇芳療師</label>
+          <select v-model.number="form.therapistId">
+            <option v-for="t in therapists" :key="t.id" :value="t.id">{{ t.name }}（{{ t.specialty }}）</option>
+          </select>
+          <label>日期</label>
+          <input type="date" v-model="form.date">
+          <label>可預約時段</label>
+          <div class="slots">
+            <button v-for="s in timeSlots" :key="s" class="slot"
+                    :class="{taken: isTaken(s), picked: form.time === s}"
+                    :disabled="isTaken(s)" @click="form.time = s">{{ s }}</button>
+          </div>
+          <button class="btn" @click="book">送出預約</button>
+          <div class="msg" :class="{error: bookMsg.error}" v-if="bookMsg.text">{{ bookMsg.text }}</div>
+        </template>
+
+        <!-- 2. 預約紀錄 -->
+        <template v-if="current === 'history'">
+          <h2>📋 我的預約紀錄</h2>
+          <div class="table-wrap">
+            <table>
+              <tr><th>日期</th><th>時間</th><th>芳療師</th><th>狀態</th><th>操作</th></tr>
+              <tr v-for="a in myAppointments" :key="a.id">
+                <td>{{ a.date }}</td><td>{{ a.time }}</td><td>{{ therapistName(a.therapistId) }}</td>
+                <td><span class="status" :class="a.status">{{ STATUS[a.status] }}</span></td>
+                <td>
+                  <button class="link-btn" v-if="['PENDING','CONFIRMED'].includes(a.status)" @click="a.status = 'CANCELLED'">取消預約</button>
+                  <span v-else style="color:var(--muted)">—</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </template>
+
+        <!-- 3. 今日預約（芳療師） -->
+        <template v-if="current === 'today'">
+          <h2>🕒 今日預約（{{ today }}）</h2>
+          <div class="table-wrap">
+            <table>
+              <tr><th>時間</th><th>客戶</th><th>芳療師</th><th>服務狀態</th></tr>
+              <tr v-for="a in todayAppointments" :key="a.id">
+                <td>{{ a.time }}</td>
+                <td>{{ maskName(customerOf(a).name) }}</td>
+                <td>{{ therapistName(a.therapistId) }}</td>
+                <td>
+                  <select v-model="a.status" style="width:auto;padding:5px 8px;font-size:12.5px;">
+                    <option v-for="(label, key) in STATUS" :key="key" :value="key">{{ label }}</option>
+                  </select>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p class="privacy">🔒 客戶姓名已遮罩，電話與 Email 不顯示。</p>
+        </template>
+
+        <!-- 4. 班表 -->
+        <template v-if="current === 'schedule'">
+          <h2>🗓️ 芳療師班表</h2>
+          <label>選擇芳療師</label>
+          <select v-model.number="scheduleTherapist">
+            <option v-for="t in therapists" :key="t.id" :value="t.id">{{ t.name }}</option>
+          </select>
+          <p style="font-size:13px;color:var(--muted);">點擊星期即可切換上班 / 休假</p>
+          <div class="week">
+            <div class="day" v-for="(d, i) in WEEK" :key="d"
+                 :class="{on: currentShift[i]}" style="cursor:pointer" @click="currentShift[i] = !currentShift[i]">
+              <b>{{ d }}</b>{{ currentShift[i] ? '10:00–18:00' : '休假' }}
+            </div>
+          </div>
+        </template>
+
+        <!-- 5. 客戶概況 -->
+        <template v-if="current === 'customers'">
+          <h2>👥 客戶概況</h2>
+          <div class="table-wrap">
+            <table>
+              <tr><th>客戶</th><th>會員編號</th><th>累計預約</th><th>最近一次</th></tr>
+              <tr v-for="c in customerStats" :key="c.id">
+                <td>{{ maskName(c.name) }}</td>
+                <td>M-{{ String(c.id).padStart(4, '0') }}</td>
+                <td>{{ c.count }} 次</td>
+                <td>{{ c.last || '-' }}</td>
+              </tr>
+            </table>
+          </div>
+          <p class="privacy">🔒 依個資保護原則，示範版僅顯示遮罩姓名與預約統計，不顯示電話、Email 等聯絡資訊。</p>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
+
+const pad = n => String(n).padStart(2, '0');
+const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return fmt(d); };
+
+createApp({
+  setup() {
+    const STATUS = { PENDING: '已預約', CONFIRMED: '已確認', COMPLETED: '已完成', CANCELLED: '已取消' };
+    const WEEK = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+    const today = fmt(new Date());
+    const ME = 1; // 示範使用者的 userId
+
+    const cards = [
+      { key: 'booking',   icon: '📅', title: '線上預約',   role: '會員',   desc: '選擇芳療師、日期與時段，完成預約。' },
+      { key: 'history',   icon: '📋', title: '預約紀錄',   role: '會員',   desc: '查看自己的預約狀態，可取消尚未完成的預約。' },
+      { key: 'today',     icon: '🕒', title: '今日預約',   role: '芳療師', desc: '查看今天的預約並更新服務狀態（完成服務）。' },
+      { key: 'schedule',  icon: '🗓️', title: '芳療師班表', role: '芳療師', desc: '設定每週上班 / 休假日。' },
+      { key: 'customers', icon: '👥', title: '客戶概況',   role: '芳療師', desc: '客戶預約統計，個資已遮罩保護。' },
+    ];
+
+    // ---- 假資料（不含真實個資）----
+    const therapists = [
+      { id: 1, name: '林芳療師', specialty: '頭部經絡疏導' },
+      { id: 2, name: '陳芳療師', specialty: '精油頭皮護理' },
+      { id: 3, name: '黃芳療師', specialty: '肩頸放鬆' },
+    ];
+    const customers = [
+      { id: 1, name: '王小明' }, { id: 2, name: '李美玲' }, { id: 3, name: '張志豪' }, { id: 4, name: '吳佳' },
+    ];
+    const appointments = reactive([
+      { id: 1, userId: 1, therapistId: 1, date: addDays(-7), time: '14:00', status: 'COMPLETED' },
+      { id: 2, userId: 1, therapistId: 2, date: addDays(3),  time: '11:00', status: 'CONFIRMED' },
+      { id: 3, userId: 2, therapistId: 1, date: today,       time: '10:00', status: 'CONFIRMED' },
+      { id: 4, userId: 3, therapistId: 2, date: today,       time: '13:00', status: 'PENDING' },
+      { id: 5, userId: 4, therapistId: 1, date: today,       time: '16:00', status: 'PENDING' },
+      { id: 6, userId: 2, therapistId: 3, date: addDays(-2), time: '15:00', status: 'COMPLETED' },
+    ]);
+    const shifts = reactive({
+      1: [true, true, false, true, true, true, false],
+      2: [true, false, true, true, true, false, true],
+      3: [false, true, true, true, false, true, true],
+    });
+
+    // ---- 狀態 ----
+    const loggedIn = ref(true);
+    const current = ref(null);
+    const menuOpen = ref(false);
+    const dropdownEl = ref(null);
+
+    const open = key => { current.value = key; menuOpen.value = false; };
+    const goHome = () => open(null);
+    const logout = () => { loggedIn.value = false; current.value = null; menuOpen.value = false; };
+
+    // 點下拉選單外面時自動關閉
+    const onDocClick = e => { if (dropdownEl.value && !dropdownEl.value.contains(e.target)) menuOpen.value = false; };
+    onMounted(() => document.addEventListener('click', onDocClick));
+    onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
+
+    // ---- 工具 ----
+    const maskName = n => !n ? '-' : n.length <= 2 ? n[0] + 'O' : n[0] + 'O'.repeat(n.length - 2) + n.at(-1);
+    const therapistName = id => (therapists.find(t => t.id === id) || {}).name || '-';
+    const customerOf = a => customers.find(c => c.id === a.userId) || {};
+
+    // ---- 預約 ----
+    const timeSlots = ['10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    const form = reactive({ therapistId: 1, date: addDays(1), time: '' });
+    const bookMsg = reactive({ text: '', error: false });
+    const isTaken = s => appointments.some(a =>
+      a.therapistId === form.therapistId && a.date === form.date && a.time === s && a.status !== 'CANCELLED');
+    const book = () => {
+      if (!form.date || !form.time) { Object.assign(bookMsg, { text: '請選擇日期與時段', error: true }); return; }
+      appointments.push({ id: Date.now(), userId: ME, therapistId: form.therapistId, date: form.date, time: form.time, status: 'PENDING' });
+      Object.assign(bookMsg, { text: `預約成功！${form.date} ${form.time}，可到「預約紀錄」查看`, error: false });
+      form.time = '';
+    };
+
+    const myAppointments = computed(() =>
+      appointments.filter(a => a.userId === ME).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)));
+    const todayAppointments = computed(() =>
+      appointments.filter(a => a.date === today).sort((a, b) => a.time.localeCompare(b.time)));
+
+    // ---- 班表 ----
+    const scheduleTherapist = ref(1);
+    const currentShift = computed(() => shifts[scheduleTherapist.value]);
+
+    // ---- 客戶統計 ----
+    const customerStats = computed(() => customers.map(c => {
+      const list = appointments.filter(a => a.userId === c.id && a.status !== 'CANCELLED');
+      const last = list.map(a => a.date).sort().at(-1);
+      return { id: c.id, name: c.name, count: list.length, last };
+    }));
+
+    return {
+      STATUS, WEEK, today, cards, therapists, loggedIn, current, menuOpen, dropdownEl,
+      open, goHome, logout, maskName, therapistName, customerOf,
+      timeSlots, form, bookMsg, isTaken, book, myAppointments, todayAppointments,
+      scheduleTherapist, currentShift, customerStats,
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

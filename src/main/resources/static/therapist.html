@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeadSpa Booking System - 芳療師專區</title>
+<style>
+  :root{
+    --green-dark:#2f6b4f;
+
+    --green:#3f8f66;
+    --green-light:#eaf5ee;
+    --green-border:#c9e3d3;
+    --text:#2c2c2c;
+    --muted:#6b7280;
+    --red:#c0392b;
+    --blue:#1d63c9;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+    background:var(--green-light);
+    color:var(--text);
+  }
+  header{
+    background:var(--white);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--green-border);
+  }
+  header .brand{display:flex;align-items:center;gap:10px;}
+  header .brand .logo{font-size:26px;}
+  header .brand h1{font-size:20px;margin:0;color:var(--green-dark);}
+  header .brand p{font-size:12px;margin:0;color:var(--muted);}
+  header .user-box{font-size:14px;color:var(--green-dark);display:flex;align-items:center;gap:12px;}
+  header .user-box button{
+    background:none;border:1px solid var(--green-border);color:var(--green-dark);
+    padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;
+  }
+  header .user-box button:hover{background:var(--green-light);}
+
+  .container{max-width:920px;margin:32px auto;padding:0 20px;}
+
+  .card{
+    background:var(--white);
+    border:1px solid var(--green-border);
+    border-radius:14px;
+    padding:28px;
+    margin-bottom:20px;
+  }
+  .card h2{margin-top:0;font-size:18px;color:var(--green-dark);display:flex;align-items:center;gap:8px;}
+
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
+  input,select{
+    padding:10px 12px;border:1px solid var(--green-border);
+    border-radius:8px;font-size:14px;background:var(--white);color:var(--text);
+  }
+  input{width:100%;}
+  input:focus,select:focus{outline:none;border-color:var(--green);}
+  input:disabled{background:var(--green-light);color:var(--muted);}
+
+  .btn{
+    margin-top:20px;background:var(--green);color:#fff;border:none;
+    padding:11px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;
+  }
+  .btn:hover{background:var(--green-dark);}
+  .btn.secondary{background:#fff;color:var(--green-dark);border:1px solid var(--green-border);}
+  .btn.secondary:hover{background:var(--green-light);}
+  .btn.small{margin-top:0;padding:6px 12px;font-size:12.5px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{
+    padding:9px 18px;border-radius:999px;border:1px solid var(--green-border);
+    background:#fff;color:var(--green-dark);font-size:14px;cursor:pointer;
+  }
+  .tab.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:8px;}
+  .msg.error{background:#fdecea;color:var(--red);}
+  .msg.ok{background:#e8f7ee;color:var(--green-dark);}
+  .hidden{display:none !important;}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--green-border);font-size:13.5px;}
+  th{color:var(--muted);font-weight:600;}
+  .status{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+  .status.pending{background:#eaf5ee;color:var(--green-dark);}
+  .status.confirmed{background:#e6f0fb;color:var(--blue);}
+  .status.completed{background:#e6f0fb;color:var(--blue);}
+  .status.cancelled{background:#fdecea;color:var(--red);}
+
+  .status-select{padding:5px 8px;font-size:12.5px;border-radius:6px;}
+
+  .month-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:6px;}
+  .month-nav button{
+    background:#fff;border:1px solid var(--green-border);color:var(--green-dark);
+    border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;
+  }
+  .month-nav button:hover{background:var(--green-light);}
+  .month-nav .month-label{font-size:15px;font-weight:700;color:var(--green-dark);min-width:110px;text-align:center;}
+
+  .empty{color:var(--muted);font-size:13.5px;padding:16px 0;text-align:center;}
+  .config-note{font-size:12px;color:var(--muted);text-align:center;margin-top:24px;}
+  .switch-link{font-size:12px;color:var(--muted);text-align:center;margin-top:6px;}
+  .switch-link a{color:var(--green-dark);}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:600px){.field-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="logo">🌿</span>
+    <div>
+      <h1>HeadSpa Booking System</h1>
+      <p>芳療師專區</p>
+    </div>
+  </div>
+  <div class="user-box" id="headerUserBox"></div>
+</header>
+
+<div class="container">
+
+  <!-- 登入 / 註冊 -->
+  <div class="card" id="loginCard">
+    <h2>👤 芳療師登入</h2>
+    <label>手機號碼</label>
+    <input type="tel" id="loginPhone" placeholder="0910222333">
+    <button class="btn" onclick="login()">登入</button>
+    <div class="msg hidden" id="loginMsg"></div>
+
+    <div id="registerBox" class="hidden" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--green-border);">
+      <h2 style="font-size:15px;">找不到這個手機號碼的芳療師，建立新帳號？</h2>
+      <label>手機號碼</label>
+      <input type="tel" id="regPhone" disabled>
+      <label>姓名</label>
+      <input type="text" id="regName" placeholder="陳芳療">
+      <label>課程 / 專長</label>
+      <input type="text" id="regSpecialty" placeholder="頭部經絡疏導">
+      <button class="btn secondary" onclick="register()">建立帳號並登入</button>
+    </div>
+  </div>
+
+  <!-- 登入後主畫面 -->
+  <div id="appArea" class="hidden">
+
+    <div class="tabs">
+      <div class="tab active" data-tab="today" onclick="switchTab('today')">📅 今日預約</div>
+      <div class="tab" data-tab="month" onclick="switchTab('month')">🗓️ 月班表</div>
+      <div class="tab" data-tab="customers" onclick="switchTab('customers')">👥 客戶資料</div>
+      <div class="tab" data-tab="profile" onclick="switchTab('profile')">✏️ 修改資料</div>
+    </div>
+
+    <!-- 今日預約 -->
+    <div class="card tab-panel" id="panel-today">
+      <h2>📅 今日預約（<span id="todayDateLabel"></span>）</h2>
+      <div id="todayTableWrap"></div>
+      <div class="msg hidden" id="todayMsg"></div>
+    </div>
+
+    <!-- 月班表 -->
+    <div class="card tab-panel hidden" id="panel-month">
+      <h2>🗓️ 月班表</h2>
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">‹ 上個月</button>
+        <div class="month-label" id="monthLabel"></div>
+        <button onclick="changeMonth(1)">下個月 ›</button>
+      </div>
+      <div id="monthTableWrap"></div>
+    </div>
+
+    <!-- 客戶資料 -->
+    <div class="card tab-panel hidden" id="panel-customers">
+      <h2>👥 客戶資料</h2>
+      <div id="customersTableWrap"></div>
+    </div>
+
+    <!-- 修改資料 -->
+    <div class="card tab-panel hidden" id="panel-profile">
+      <h2>✏️ 修改資料</h2>
+      <div class="field-row">
+        <div>
+          <label>姓名</label>
+          <input type="text" id="profName">
+        </div>
+        <div>
+          <label>手機號碼</label>
+          <input type="tel" id="profPhone">
+        </div>
+      </div>
+      <label>課程 / 專長</label>
+      <input type="text" id="profSpecialty">
+      <button class="btn" onclick="updateProfile()">儲存變更</button>
+      <div class="msg hidden" id="profMsg"></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+        提醒：手機號碼是登入帳號，改了之後下次要用新號碼登入。
+      </p>
+    </div>
+
+  </div>
+
+  <p class="config-note">API 位址：<span id="apiBaseLabel"></span></p>
+  <p class="switch-link">會員嗎？前往 <a href="index.html">會員登入頁</a></p>
+</div>
+
+<script>
+  // ------------------------------------------------------------------
+  // 後端 API 位址，依實際部署狀況修改
+  // ------------------------------------------------------------------
+  // 前後端已合併：HTML 由 Spring Boot 直接提供，API 走同一個網域，用相對路徑即可
+  const API_BASE = '';
+  document.getElementById('apiBaseLabel').textContent = window.location.origin;
+
+  let currentTherapist = null;
+  let apptCache = [];          // 這位芳療師的所有預約
+  let usersCache = {};         // userId -> user 物件，避免重複打 API
+  let currentMonthDate = new Date();
+
+  function normalizePhone(p) {
+    return (p || '').replace(/[^0-9]/g, '');
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('todayDateLabel').textContent = todayStr();
+    const saved = localStorage.getItem('headspa_therapist');
+    if (saved) {
+      try {
+        currentTherapist = JSON.parse(saved);
+        enterApp();
+      } catch (e) { /* ignore */ }
+    }
+  });
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+
+  // ---------------- 登入 / 註冊（手機號碼） ----------------
+  async function login() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    if (!phone) { showMsg('loginMsg', '請輸入手機號碼', 'error'); return; }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/therapists`);
+      if (!res.ok) throw new Error('伺服器錯誤');
+      const list = await res.json();
+      const target = normalizePhone(phone);
+      const found = list.find(t => normalizePhone(t.phone) === target && target.length > 0);
+
+      if (found) {
+        currentTherapist = found;
+        localStorage.setItem('headspa_therapist', JSON.stringify(found));
+        enterApp();
+      } else {
+        document.getElementById('registerBox').classList.remove('hidden');
+        document.getElementById('regPhone').value = phone;
+        showMsg('loginMsg', '找不到這個手機號碼的芳療師，請在下方建立帳號', 'error');
+      }
+    } catch (e) {
+      showMsg('loginMsg', '連不到後端 API，請確認 Spring Boot 是否已啟動（' + window.location.origin + '）', 'error');
+    }
+  }
+
+  async function register() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const specialty = document.getElementById('regSpecialty').value.trim();
+    if (!phone) { showMsg('loginMsg', '請先在上方輸入手機號碼', 'error'); return; }
+    if (!name) { showMsg('loginMsg', '請輸入姓名', 'error'); return; }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/therapists`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, specialty })
+      });
+      if (!res.ok) throw new Error('建立帳號失敗');
+      const created = await res.json();
+      currentTherapist = created;
+      localStorage.setItem('headspa_therapist', JSON.stringify(created));
+      enterApp();
+    } catch (e) {
+      showMsg('loginMsg', '建立帳號失敗：' + e.message, 'error');
+    }
+  }
+
+  function logout() {
+    currentTherapist = null;
+    apptCache = [];
+    usersCache = {};
+    localStorage.removeItem('headspa_therapist');
+    document.getElementById('appArea').classList.add('hidden');
+    document.getElementById('loginCard').classList.remove('hidden');
+    document.getElementById('registerBox').classList.add('hidden');
+    document.getElementById('headerUserBox').innerHTML = '';
+    document.getElementById('loginPhone').value = '';
+  }
+
+  async function enterApp() {
+    document.getElementById('loginCard').classList.add('hidden');
+    document.getElementById('appArea').classList.remove('hidden');
+    document.getElementById('headerUserBox').innerHTML =
+      `👋 ${currentTherapist.name || currentTherapist.phone}（${currentTherapist.specialty || '芳療師'}）　<button onclick="logout()">登出</button>`;
+
+    document.getElementById('profName').value = currentTherapist.name || '';
+    document.getElementById('profPhone').value = currentTherapist.phone || '';
+    document.getElementById('profSpecialty').value = currentTherapist.specialty || '';
+
+    await loadAppointments();
+    renderToday();
+  }
+
+  // ---------------- Tabs ----------------
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('panel-' + name).classList.remove('hidden');
+    if (name === 'today') renderToday();
+    if (name === 'month') renderMonth();
+    if (name === 'customers') renderCustomers();
+  }
+
+  // ---------------- 讀取這位芳療師的所有預約 + 相關客戶資料 ----------------
+  async function loadAppointments() {
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments/therapist/${currentTherapist.id}`);
+      apptCache = res.ok ? await res.json() : [];
+    } catch (e) {
+      apptCache = [];
+    }
+    const userIds = [...new Set(apptCache.map(a => a.userId).filter(Boolean))];
+    await Promise.all(userIds.map(async (uid) => {
+      if (usersCache[uid]) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${uid}`);
+        if (res.ok) usersCache[uid] = await res.json();
+      } catch (e) { /* ignore */ }
+    }));
+  }
+
+  const STATUS_LABEL = {
+    PENDING: ['已預約', 'pending'],
+    CONFIRMED: ['已確認', 'confirmed'],
+    COMPLETED: ['已完成', 'completed'],
+    CANCELLED: ['已取消', 'cancelled']
+  };
+
+  function statusSelectHtml(a) {
+    const options = Object.keys(STATUS_LABEL).map(key =>
+      `<option value="${key}" ${a.status === key ? 'selected' : ''}>${STATUS_LABEL[key][0]}</option>`
+    ).join('');
+    return `<select class="status-select" onchange="updateStatus(${a.id}, this.value)">${options}</select>`;
+  }
+
+  function customerName(userId) {
+    const u = usersCache[userId];
+    return u ? u.name : `（客戶 #${userId}）`;
+  }
+  function customerPhone(userId) {
+    const u = usersCache[userId];
+    return u ? (u.phone || '-') : '-';
+  }
+
+  // ---------------- 今日預約 ----------------
+  function renderToday() {
+    const wrap = document.getElementById('todayTableWrap');
+    const today = todayStr();
+    const list = apptCache.filter(a => a.date === today).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty">今天目前沒有預約</div>`;
+      return;
+    }
+    const rows = list.map(a => `
+      <tr>
+        <td>${a.time || '-'}</td>
+        <td>${customerName(a.userId)}</td>
+        <td>${customerPhone(a.userId)}</td>
+        <td>${statusSelectHtml(a)}</td>
+      </tr>`).join('');
+    wrap.innerHTML = `<table>
+      <tr><th>時間</th><th>客戶</th><th>電話</th><th>服務狀態</th></tr>
+      ${rows}
+    </table>`;
+  }
+
+  async function updateStatus(id, newStatus) {
+    const appt = apptCache.find(a => a.id === id);
+    if (!appt) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: appt.date,
+          time: appt.time,
+          status: newStatus,
+          userId: appt.userId,
+          therapistId: appt.therapistId
+        })
+      });
+      if (res.status === 409) throw new Error((await res.json()).message);  // 時段已被預約
+      if (!res.ok) throw new Error('更新失敗');
+      appt.status = newStatus;
+      showMsg('todayMsg', '服務狀態已更新', 'ok');
+    } catch (e) {
+      showMsg('todayMsg', '更新失敗：' + e.message, 'error');
+      renderToday();  // 下拉選單還原成原本的狀態
+    }
+  }
+
+  // ---------------- 月班表 ----------------
+  function changeMonth(delta) {
+    currentMonthDate.setMonth(currentMonthDate.getMonth() + delta);
+    renderMonth();
+  }
+
+  function renderMonth() {
+    const y = currentMonthDate.getFullYear();
+    const m = currentMonthDate.getMonth() + 1;
+    document.getElementById('monthLabel').textContent = `${y} 年 ${pad(m)} 月`;
+    const prefix = `${y}-${pad(m)}`;
+
+    const wrap = document.getElementById('monthTableWrap');
+    const list = apptCache
+      .filter(a => (a.date || '').startsWith(prefix))
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty">這個月還沒有預約</div>`;
+      return;
+    }
+    const rows = list.map(a => {
+      const label = STATUS_LABEL[a.status] || [a.status || '-', 'pending'];
+      return `<tr>
+        <td>${a.date}</td>
+        <td>${a.time || '-'}</td>
+        <td>${customerName(a.userId)}</td>
+        <td><span class="status ${label[1]}">${label[0]}</span></td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table>
+      <tr><th>日期</th><th>時間</th><th>客戶</th><th>狀態</th></tr>
+      ${rows}
+    </table>`;
+  }
+
+  // ---------------- 客戶資料 ----------------
+  function renderCustomers() {
+    const wrap = document.getElementById('customersTableWrap');
+    const counts = {};
+    apptCache.forEach(a => {
+      if (!a.userId) return;
+      counts[a.userId] = (counts[a.userId] || 0) + 1;
+    });
+    const ids = Object.keys(counts);
+    if (!ids.length) {
+      wrap.innerHTML = `<div class="empty">目前還沒有服務過的客戶</div>`;
+      return;
+    }
+    const rows = ids.map(uid => {
+      const u = usersCache[uid] || {};
+      return `<tr>
+        <td>${u.name || '（客戶 #' + uid + '）'}</td>
+        <td>${u.phone || '-'}</td>
+        <td>${u.email || '-'}</td>
+        <td>${counts[uid]} 次</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table>
+      <tr><th>姓名</th><th>電話</th><th>Email</th><th>累計預約次數</th></tr>
+      ${rows}
+    </table>`;
+  }
+
+  // ---------------- 修改資料 ----------------
+  async function updateProfile() {
+    const name = document.getElementById('profName').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    const specialty = document.getElementById('profSpecialty').value.trim();
+    try {
+      const res = await fetch(`${API_BASE}/api/therapists/${currentTherapist.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, specialty })
+      });
+      if (!res.ok) throw new Error('更新失敗');
+      const updated = await res.json();
+      currentTherapist = updated;
+      localStorage.setItem('headspa_therapist', JSON.stringify(updated));
+      document.getElementById('headerUserBox').innerHTML =
+        `👋 ${currentTherapist.name || currentTherapist.phone}（${currentTherapist.specialty || '芳療師'}）　<button onclick="logout()">登出</button>`;
+      showMsg('profMsg', '資料已更新', 'ok');
+    } catch (e) {
+      showMsg('profMsg', '更新失敗：' + e.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

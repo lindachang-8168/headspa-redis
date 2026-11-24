@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeadSpa Booking System - 會員專區</title>
+<style>
+  :root{
+    --green-dark:#2f6b4f;
+    --green:#3f8f66;
+    --green-light:#eaf5ee;
+    --green-border:#c9e3d3;
+    --text:#2c2c2c;
+    --muted:#6b7280;
+    --red:#c0392b;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+    background:var(--green-light);
+    color:var(--text);
+  }
+  header{
+    background:var(--white);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--green-border);
+  }
+  header .brand{display:flex;align-items:center;gap:10px;}
+  header .brand .logo{font-size:26px;}
+  header .brand h1{font-size:20px;margin:0;color:var(--green-dark);}
+  header .brand p{font-size:12px;margin:0;color:var(--muted);}
+  header .user-box{font-size:14px;color:var(--green-dark);display:flex;align-items:center;gap:12px;}
+  header .user-box button{
+    background:none;border:1px solid var(--green-border);color:var(--green-dark);
+    padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;
+  }
+  header .user-box button:hover{background:var(--green-light);}
+
+  .container{max-width:760px;margin:32px auto;padding:0 20px;}
+
+  .card{
+    background:var(--white);
+    border:1px solid var(--green-border);
+    border-radius:14px;
+    padding:28px;
+    margin-bottom:20px;
+  }
+  .card h2{margin-top:0;font-size:18px;color:var(--green-dark);display:flex;align-items:center;gap:8px;}
+
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
+  input,select{
+    width:100%;padding:10px 12px;border:1px solid var(--green-border);
+    border-radius:8px;font-size:14px;background:var(--white);color:var(--text);
+  }
+  input:focus,select:focus{outline:none;border-color:var(--green);}
+  input:disabled{background:var(--green-light);color:var(--muted);}
+
+  .btn{
+    margin-top:20px;background:var(--green);color:#fff;border:none;
+    padding:11px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;
+  }
+  .btn:hover{background:var(--green-dark);}
+  .btn.secondary{background:#fff;color:var(--green-dark);border:1px solid var(--green-border);}
+  .btn.secondary:hover{background:var(--green-light);}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{
+    padding:9px 18px;border-radius:999px;border:1px solid var(--green-border);
+    background:#fff;color:var(--green-dark);font-size:14px;cursor:pointer;
+  }
+  .tab.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:8px;}
+  .msg.error{background:#fdecea;color:var(--red);}
+  .msg.ok{background:#e8f7ee;color:var(--green-dark);}
+  .hidden{display:none !important;}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--green-border);font-size:13.5px;}
+  th{color:var(--muted);font-weight:600;}
+  .status{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+  .status.pending{background:#eaf5ee;color:var(--green-dark);}
+  .status.confirmed{background:#e6f0fb;color:#1d63c9;}
+  .status.completed{background:#e6f0fb;color:#1d63c9;}
+  .status.cancelled{background:#fdecea;color:var(--red);}
+
+  .link-btn{
+    background:none;border:none;color:var(--red);font-size:13px;
+    cursor:pointer;padding:0;text-decoration:underline;
+  }
+  .link-btn:hover{color:#8f2c22;}
+  .link-btn:disabled{color:var(--muted);cursor:not-allowed;text-decoration:none;}
+
+  .empty{color:var(--muted);font-size:13.5px;padding:16px 0;text-align:center;}
+  .config-note{font-size:12px;color:var(--muted);text-align:center;margin-top:24px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="logo">🌿</span>
+    <div>
+      <h1>HeadSpa Booking System</h1>
+      <p>頭部經絡按摩預約管理系統</p>
+    </div>
+  </div>
+  <div class="user-box" id="headerUserBox"></div>
+</header>
+
+<div class="container">
+
+  <!-- 登入 / 註冊 -->
+  <div class="card" id="loginCard">
+    <h2>👤 會員登入</h2>
+    <label>手機號碼</label>
+    <input type="tel" id="loginPhone" placeholder="0912345678">
+    <button class="btn" onclick="login()">登入</button>
+    <div class="msg hidden" id="loginMsg"></div>
+
+    <div id="registerBox" class="hidden" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--green-border);">
+      <h2 style="font-size:15px;">找不到這個手機號碼的會員，建立新會員？</h2>
+      <label>手機號碼</label>
+      <input type="tel" id="regPhone" disabled>
+      <label>姓名</label>
+      <input type="text" id="regName" placeholder="王小明">
+      <label>Email（選填）</label>
+      <input type="email" id="regEmail" placeholder="you@example.com">
+      <button class="btn secondary" onclick="register()">建立會員並登入</button>
+    </div>
+  </div>
+
+  <!-- 登入後主畫面 -->
+  <div id="appArea" class="hidden">
+
+    <div class="tabs">
+      <div class="tab active" data-tab="booking" onclick="switchTab('booking')">📅 預約</div>
+      <div class="tab" data-tab="history" onclick="switchTab('history')">📋 查看預約紀錄</div>
+      <div class="tab" data-tab="profile" onclick="switchTab('profile')">✏️ 修改資料</div>
+    </div>
+
+    <!-- 預約 -->
+    <div class="card tab-panel" id="panel-booking">
+      <h2>📅 新增預約</h2>
+      <label>選擇芳療師</label>
+      <select id="bookTherapist"></select>
+      <label>日期</label>
+      <input type="date" id="bookDate">
+      <label>時間</label>
+      <input type="time" id="bookTime">
+      <button class="btn" onclick="createAppointment()">送出預約</button>
+      <div class="msg hidden" id="bookMsg"></div>
+    </div>
+
+    <!-- 預約紀錄 -->
+    <div class="card tab-panel hidden" id="panel-history">
+      <h2>📋 我的預約紀錄</h2>
+      <div id="historyTableWrap"></div>
+      <div class="msg hidden" id="historyMsg"></div>
+    </div>
+
+    <!-- 修改資料 -->
+    <div class="card tab-panel hidden" id="panel-profile">
+      <h2>✏️ 修改會員資料</h2>
+      <label>姓名</label>
+      <input type="text" id="profName">
+      <label>手機號碼</label>
+      <input type="tel" id="profPhone">
+      <label>Email</label>
+      <input type="email" id="profEmail">
+      <button class="btn" onclick="updateProfile()">儲存變更</button>
+      <div class="msg hidden" id="profMsg"></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+        提醒：手機號碼是登入帳號，改了之後下次要用新號碼登入。
+      </p>
+    </div>
+
+  </div>
+
+  <p class="config-note">API 位址：<span id="apiBaseLabel"></span></p>
+</div>
+
+<script>
+  // ------------------------------------------------------------------
+  // 後端 API 位址，依實際部署狀況修改（例如 docker 內用服務名稱，
+  // 部署到 AWS 後改成你的網域 / 主機 IP）
+  // ------------------------------------------------------------------
+  // 前後端已合併：HTML 由 Spring Boot 直接提供，API 走同一個網域，用相對路徑即可
+  const API_BASE = '';
+  document.getElementById('apiBaseLabel').textContent = window.location.origin;
+
+  let currentUser = null;
+  let therapistsCache = [];
+  let historyCache = [];
+
+  // 手機號碼比對用：去掉空白、破折號，只留數字，避免格式不一致比對失敗
+  function normalizePhone(p) {
+    return (p || '').replace(/[^0-9]/g, '');
+  }
+
+  // 重新整理頁面時，若之前登入過就自動帶回
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('headspa_user');
+    if (saved) {
+      try {
+        currentUser = JSON.parse(saved);
+        enterApp();
+      } catch (e) { /* ignore */ }
+    }
+  });
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+
+  // ---------------- 登入 / 註冊（用手機號碼） ----------------
+  async function login() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    if (!phone) { showMsg('loginMsg', '請輸入手機號碼', 'error'); return; }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/users`);
+      if (!res.ok) throw new Error('伺服器錯誤');
+      const users = await res.json();
+      const target = normalizePhone(phone);
+      const found = users.find(u => normalizePhone(u.phone) === target && target.length > 0);
+
+      if (found) {
+        currentUser = found;
+        localStorage.setItem('headspa_user', JSON.stringify(found));
+        enterApp();
+      } else {
+        document.getElementById('registerBox').classList.remove('hidden');
+        document.getElementById('regPhone').value = phone;
+        showMsg('loginMsg', '找不到這個手機號碼的會員，請在下方註冊', 'error');
+      }
+    } catch (e) {
+      showMsg('loginMsg', '連不到後端 API，請確認 Spring Boot 是否已啟動（' + window.location.origin + '）', 'error');
+    }
+  }
+
+  async function register() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    if (!phone) { showMsg('loginMsg', '請先在上方輸入手機號碼', 'error'); return; }
+    if (!name) { showMsg('loginMsg', '請輸入姓名', 'error'); return; }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email })
+      });
+      if (!res.ok) throw new Error('建立會員失敗');
+      const created = await res.json();
+      currentUser = created;
+      localStorage.setItem('headspa_user', JSON.stringify(created));
+      enterApp();
+    } catch (e) {
+      showMsg('loginMsg', '註冊失敗：' + e.message, 'error');
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('headspa_user');
+    document.getElementById('appArea').classList.add('hidden');
+    document.getElementById('loginCard').classList.remove('hidden');
+    document.getElementById('registerBox').classList.add('hidden');
+    document.getElementById('headerUserBox').innerHTML = '';
+    document.getElementById('loginPhone').value = '';
+  }
+
+  async function enterApp() {
+    document.getElementById('loginCard').classList.add('hidden');
+    document.getElementById('appArea').classList.remove('hidden');
+    document.getElementById('headerUserBox').innerHTML =
+      `👋 ${currentUser.name || currentUser.phone}　<button onclick="logout()">登出</button>`;
+
+    document.getElementById('profName').value = currentUser.name || '';
+    document.getElementById('profPhone').value = currentUser.phone || '';
+    document.getElementById('profEmail').value = currentUser.email || '';
+
+    await loadTherapists();
+    await loadHistory();
+  }
+
+  // ---------------- Tabs ----------------
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('panel-' + name).classList.remove('hidden');
+    if (name === 'history') loadHistory();
+  }
+
+  // ---------------- 預約 ----------------
+  async function loadTherapists() {
+    try {
+      const res = await fetch(`${API_BASE}/api/therapists`);
+      therapistsCache = res.ok ? await res.json() : [];
+    } catch (e) {
+      therapistsCache = [];
+    }
+    const sel = document.getElementById('bookTherapist');
+    sel.innerHTML = therapistsCache.length
+      ? therapistsCache.map(t => `<option value="${t.id}">${t.name}（${t.specialty || '芳療師'}）</option>`).join('')
+      : `<option value="">目前尚無芳療師資料</option>`;
+  }
+
+  async function createAppointment() {
+    const therapistId = document.getElementById('bookTherapist').value;
+    const date = document.getElementById('bookDate').value;
+    const time = document.getElementById('bookTime').value;
+    if (!therapistId || !date || !time) {
+      showMsg('bookMsg', '請選擇芳療師、日期與時間', 'error');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date, time, status: 'PENDING',
+          userId: currentUser.id,
+          therapistId: Number(therapistId)
+        })
+      });
+      if (res.status === 409) throw new Error((await res.json()).message);  // 時段已被預約
+      if (!res.ok) throw new Error('預約失敗');
+      showMsg('bookMsg', '預約成功！可以到「查看預約紀錄」確認', 'ok');
+      document.getElementById('bookDate').value = '';
+      document.getElementById('bookTime').value = '';
+      loadHistory();
+    } catch (e) {
+      showMsg('bookMsg', '預約失敗：' + e.message, 'error');
+    }
+  }
+
+  // ---------------- 預約紀錄 ----------------
+  const STATUS_LABEL = {
+    PENDING: ['已預約', 'pending'],
+    CONFIRMED: ['已確認', 'confirmed'],
+    COMPLETED: ['已完成', 'completed'],
+    CANCELLED: ['已取消', 'cancelled']
+  };
+
+  // 已完成或已取消的預約不能再取消
+  const CANCELLABLE_STATUSES = ['PENDING', 'CONFIRMED'];
+
+  async function loadHistory() {
+    const wrap = document.getElementById('historyTableWrap');
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments/user/${currentUser.id}`);
+      const list = res.ok ? await res.json() : [];
+      historyCache = list;
+
+      if (!list.length) {
+        wrap.innerHTML = `<div class="empty">目前還沒有預約紀錄</div>`;
+        return;
+      }
+      const rows = list.map(a => {
+        const therapist = therapistsCache.find(t => t.id === a.therapistId);
+        const label = STATUS_LABEL[a.status] || [a.status || '-', 'pending'];
+        const canCancel = CANCELLABLE_STATUSES.includes(a.status);
+        const actionCell = canCancel
+          ? `<button class="link-btn" onclick="cancelAppointment(${a.id})">取消預約</button>`
+          : `<button class="link-btn" disabled>—</button>`;
+        return `<tr>
+          <td>${a.date || '-'}</td>
+          <td>${a.time || '-'}</td>
+          <td>${therapist ? therapist.name : '（芳療師 #' + a.therapistId + '）'}</td>
+          <td><span class="status ${label[1]}">${label[0]}</span></td>
+          <td>${actionCell}</td>
+        </tr>`;
+      }).join('');
+      wrap.innerHTML = `<table>
+        <tr><th>日期</th><th>時間</th><th>芳療師</th><th>狀態</th><th>操作</th></tr>
+        ${rows}
+      </table>`;
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty">讀取預約紀錄失敗</div>`;
+    }
+  }
+
+  async function cancelAppointment(id) {
+    const appt = historyCache.find(a => a.id === id);
+    if (!appt) return;
+
+    if (!confirm(`確定要取消 ${appt.date} ${appt.time} 的預約嗎？`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: appt.date,
+          time: appt.time,
+          status: 'CANCELLED',
+          userId: appt.userId,
+          therapistId: appt.therapistId
+        })
+      });
+      if (!res.ok) throw new Error('取消失敗');
+      showMsg('historyMsg', '已取消該筆預約', 'ok');
+      loadHistory();
+    } catch (e) {
+      showMsg('historyMsg', '取消失敗：' + e.message, 'error');
+    }
+  }
+
+  // ---------------- 修改資料 ----------------
+  async function updateProfile() {
+    const name = document.getElementById('profName').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    const email = document.getElementById('profEmail').value.trim();
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email })
+      });
+      if (!res.ok) throw new Error('更新失敗');
+      const updated = await res.json();
+      currentUser = updated;
+      localStorage.setItem('headspa_user', JSON.stringify(updated));
+      document.getElementById('headerUserBox').innerHTML =
+        `👋 ${currentUser.name || currentUser.phone}　<button onclick="logout()">登出</button>`;
+      showMsg('profMsg', '資料已更新', 'ok');
+    } catch (e) {
+      showMsg('profMsg', '更新失敗：' + e.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ package com.headspa.redis.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.headspa.redis.model.Appointment;
 import com.headspa.redis.service.AppointmentService;
+import com.headspa.redis.service.TimeSlotConflictException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -107,6 +108,18 @@ class AppointmentControllerTest {
                         .content(objectMapper.writeValueAsString(newAppointment)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.date").value("2026-08-02"));
+    }
+
+    @Test
+    void create_whenTimeSlotTaken_shouldReturn409WithMessage() throws Exception {
+        when(appointmentService.save(any(Appointment.class)))
+                .thenThrow(new TimeSlotConflictException("2026-08-01", "10:00"));
+
+        mockMvc.perform(post("/api/appointments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleAppointment())))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("這位芳療師 2026-08-01 10:00 已有預約，請選擇其他時段"));
     }
 
     @Test

@@ -41,6 +41,9 @@ services:
       redis:
         condition: service_healthy
     ports:
+      # 前後端已合併：前端 HTML 由 Spring Boot（src/main/resources/static）直接提供
+      # 80 給瀏覽器開網頁用，8080 保留給直接呼叫 API
+      - "80:8080"
       - "8080:8080"
     environment:
       # 覆蓋 application.yaml 裡的連線設定，改指向同一個 docker network 裡的服務名稱
@@ -49,16 +52,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-
-  frontend:
-    build: ../headspa-frontend
-    container_name: headspa-frontend
-    restart: unless-stopped
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-    profiles: ["frontend"]
 
 volumes:
   mysql-data:

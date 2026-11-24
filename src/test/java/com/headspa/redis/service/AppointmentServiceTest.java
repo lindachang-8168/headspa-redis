@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -155,6 +156,60 @@ class AppointmentServiceTest {
 
         assertThat(result).isNull();
         verify(appointmentRepository, never()).save(any(Appointment.class));
+    }
+
+    // ---------------- 同時段不能重複預約 ----------------
+
+    private Appointment newBooking(String status) {
+        Appointment a = new Appointment();
+        a.setDate("2026-08-01");
+        a.setTime("10:00");
+        a.setStatus(status);
+        a.setUserId(2L);
+        a.setTherapistId(5L);
+        return a;
+    }
+
+    @Test
+    void save_whenTimeSlotTaken_shouldThrowConflictAndNotSave() {
+        when(appointmentRepository.existsByTherapistIdAndDateAndTimeAndStatusNot(5L, "2026-08-01", "10:00", "CANCELLED"))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> appointmentService.save(newBooking("PENDING")))
+                .isInstanceOf(TimeSlotConflictException.class);
+        verify(appointmentRepository, never()).save(any(Appointment.class));
+    }
+
+    @Test
+    void save_whenTimeSlotFree_shouldSave() {
+        when(appointmentRepository.existsByTherapistIdAndDateAndTimeAndStatusNot(5L, "2026-08-01", "10:00", "CANCELLED"))
+                .thenReturn(false);
+        when(appointmentRepository.save(any(Appointment.class))).thenReturn(existingAppointment);
+
+        assertThat(appointmentService.save(newBooking("PENDING"))).isEqualTo(existingAppointment);
+    }
+
+    @Test
+    void update_whenMovingToTakenTimeSlot_shouldThrowConflict() {
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existingAppointment));
+        when(appointmentRepository.existsByTherapistIdAndDateAndTimeAndStatusNotAndIdNot(
+                5L, "2026-08-01", "10:00", "CANCELLED", 1L)).thenReturn(true);
+
+        assertThatThrownBy(() -> appointmentService.update(1L, newBooking("CONFIRMED")))
+                .isInstanceOf(TimeSlotConflictException.class);
+        verify(appointmentRepository, never()).save(any(Appointment.class));
+    }
+
+    @Test
+    void update_toCancelled_shouldSkipTimeSlotCheck() {
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existingAppointment));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Appointment result = appointmentService.update(1L, newBooking("CANCELLED"));
+
+        assertThat(result.getStatus()).isEqualTo("CANCELLED");
+        verify(appointmentRepository, never())
+                .existsByTherapistIdAndDateAndTimeAndStatusNotAndIdNot(any(), any(), any(), any(), any());
     }
 
     @Test

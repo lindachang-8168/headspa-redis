@@ -18,6 +18,7 @@ public class AppointmentService {
 
     private static final Logger log = LoggerFactory.getLogger(AppointmentService.class);
     private static final String CACHE_PREFIX = "therapist:appointments:";
+    private static final String STATUS_CANCELLED = "CANCELLED";
 
     @Autowired
     private AppointmentRepository appointmentRepository;
@@ -63,6 +64,7 @@ public class AppointmentService {
     }
 
     public Appointment save(Appointment appointment) {
+        checkTimeSlotAvailable(appointment, null);
         Appointment saved = appointmentRepository.save(appointment);
         evictTherapistCache(saved.getTherapistId());
         return saved;
@@ -70,6 +72,7 @@ public class AppointmentService {
 
     public Appointment update(Long id, Appointment updated) {
         return appointmentRepository.findById(id).map(appointment -> {
+            checkTimeSlotAvailable(updated, id);
             appointment.setDate(updated.getDate());
             appointment.setTime(updated.getTime());
             appointment.setStatus(updated.getStatus());
@@ -86,6 +89,27 @@ public class AppointmentService {
             appointmentRepository.deleteById(id);
             evictTherapistCache(appointment.getTherapistId());
         });
+    }
+
+    /**
+     * 同一位芳療師、同一天、同一時段只能有一筆有效預約。
+     * - 已取消（CANCELLED）的預約不佔用時段，取消後別人可以再預約
+     * - 把預約改成取消時不需要檢查
+     * - 修改預約時排除自己（excludeId），例如只改狀態不會跟自己衝突
+     */
+    private void checkTimeSlotAvailable(Appointment appointment, Long excludeId) {
+        if (appointment.getTherapistId() == null || appointment.getDate() == null
+                || appointment.getTime() == null || STATUS_CANCELLED.equals(appointment.getStatus())) {
+            return;
+        }
+        boolean taken = (excludeId == null)
+                ? appointmentRepository.existsByTherapistIdAndDateAndTimeAndStatusNot(
+                        appointment.getTherapistId(), appointment.getDate(), appointment.getTime(), STATUS_CANCELLED)
+                : appointmentRepository.existsByTherapistIdAndDateAndTimeAndStatusNotAndIdNot(
+                        appointment.getTherapistId(), appointment.getDate(), appointment.getTime(), STATUS_CANCELLED, excludeId);
+        if (taken) {
+            throw new TimeSlotConflictException(appointment.getDate(), appointment.getTime());
+        }
     }
 
     private void evictTherapistCache(Long therapistId) {
