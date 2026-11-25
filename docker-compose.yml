@@ -10,7 +10,7 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT:-13307}:3306"   # 避開預設 3306，以及 Windows（Hyper-V）常保留的 3307 附近
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -24,7 +24,7 @@ services:
     container_name: headspa-redis-cache
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6381}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -42,9 +42,8 @@ services:
         condition: service_healthy
     ports:
       # 前後端已合併：前端 HTML 由 Spring Boot（src/main/resources/static）直接提供
-      # 80 給瀏覽器開網頁用，8080 保留給直接呼叫 API
-      - "80:8080"
-      - "8080:8080"
+      # 網頁和 API 共用同一個 port（預設 8090，可在 .env 用 APP_PORT 覆蓋）
+      - "${APP_PORT:-8090}:8080"
     environment:
       # 覆蓋 application.yaml 裡的連線設定，改指向同一個 docker network 裡的服務名稱
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/headspa?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Taipei&characterEncoding=utf8

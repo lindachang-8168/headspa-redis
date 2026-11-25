@@ -8,10 +8,10 @@
 
 | 頁面 | 網址（本機） |
 |---|---|
-| 會員登入 | http://localhost |
-| 芳療師登入 | http://localhost/therapist.html |
-| Vue 示範頁（假資料） | http://localhost/vue-demo.html |
-| 後端 API | http://localhost/api/therapists |
+| 會員登入 | http://localhost:8090 |
+| 芳療師登入 | http://localhost:8090/therapist.html |
+| Vue 示範頁（假資料） | http://localhost:8090/vue-demo.html |
+| 後端 API | http://localhost:8090/api/therapists |
 
 **芳療師帳號範例（用手機號碼登入；新資料庫是空的，第一次登入時找不到會跳出表單，現場建立即可）：**
 
@@ -99,7 +99,15 @@ echo "MYSQL_PASSWORD=your_password" > .env
 docker compose up -d --build
 ```
 
-啟動後：前端 `http://localhost`（或 `http://localhost:8080`），後端 API `http://localhost/api/...`。
+啟動後：前端 `http://localhost:8090`，後端 API `http://localhost:8090/api/...`（網頁和 API 共用同一個 port）。
+
+對外連接埠（都可以在 `.env` 覆蓋，例如 `APP_PORT=9090`）：
+
+| 服務 | 預設 port | `.env` 變數 |
+|---|---|---|
+| 網頁 + API | 8090 | `APP_PORT` |
+| MySQL | 13307 | `MYSQL_PORT` |
+| Redis | 6381 | `REDIS_PORT` |
 
 不用 Docker 也可以：本機開好 MySQL 與 Redis 後，在 IDE 直接執行 `RedisApplication`，瀏覽器打開 `http://localhost:8080` 即可。
 
